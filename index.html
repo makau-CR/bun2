@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.5, user-scalable=yes" />
+  <title>Binance · App</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --binance-yellow:#f0b90b;--binance-yellow-dark:#d9a70a;
+      --binance-yellow-soft:rgba(240,185,11,0.12);
+      --dark-bg:#0b0e11;--dark-surface:#1e2329;--dark-card:#181a20;--dark-elevated:#2b3139;
+      --light-text:#eaecef;--secondary-text:#848e9c;--border:#2b3139;
+      --green:#0ecb81;--red:#f6465d;
+      --radius-sm:10px;--radius-md:14px;--radius-lg:20px;
+      --transition:220ms cubic-bezier(0.4,0,0.2,1);
+    }
+
+    html, body { height: 100%; }
+
+    body{
+      font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+      background:#000;display:flex;justify-content:center;align-items:center;
+      min-height:100vh;padding:1.5rem;-webkit-font-smoothing:antialiased;
+      overflow:hidden;overscroll-behavior:none;
+    }
+
+    /* ============ IPHONE FRAME ============ */
+    .iphone-frame{
+      width:402px;height:874px;background:#000;border-radius:58px;padding:10px;
+      box-shadow:0 0 0 2px #1a1a1a,0 0 0 6px #2a2a2a,0 0 0 7px #1a1a1a,0 30px 80px rgba(0,0,0,0.8);
+      position:relative;overflow:hidden;flex-shrink:0;
+    }
+    .dynamic-island{
+      position:absolute;top:20px;left:50%;transform:translateX(-50%);
+      width:125px;height:37px;background:#000;border-radius:20px;z-index:1000;pointer-events:none;
+    }
+    .status-bar{
+      position:absolute;top:20px;left:0;right:0;height:50px;
+      display:flex;justify-content:space-between;align-items:center;padding:0 2rem;
+      color:var(--light-text);font-size:0.85rem;font-weight:600;z-index:999;pointer-events:none;
+    }
+    .status-bar .time{font-weight:700;letter-spacing:-0.3px}
+    .status-bar .status-icons{display:flex;gap:0.4rem;align-items:center;font-size:0.75rem}
+
+    /* ============ SCREEN ============ */
+    .screen{
+      width:100%;height:100%;background:var(--dark-bg);border-radius:48px;
+      overflow:hidden;position:relative;
+    }
+
+    /* ============ PAGE (fix: min-height 0) ============ */
+    .page{
+      position:absolute;inset:0;display:none;flex-direction:column;
+      overflow:hidden;min-height:0;
+    }
+    .page.active{display:flex;animation:pageIn 0.3s ease-out}
+    @keyframes pageIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+    /* ============ PAGE SCROLL (fix: min-height 0 + touch scroll) ============ */
+    .page-scroll{
+      flex:1;min-height:0;overflow-y:auto;overflow-x:hidden;
+      padding:3.5rem 1.25rem 6.5rem;
+      display:flex;flex-direction:column;gap:1.25rem;
+      scrollbar-width:none;color:var(--light-text);
+      -webkit-overflow-scrolling:touch;
+    }
+    .page-scroll::-webkit-scrollbar{display:none}
+    .page-scroll.with-back{padding-top:5.5rem}
+
+    /* ============ PAGE HEADER ============ */
+    .page-header{
+      position:absolute;top:0;left:0;right:0;height:4.5rem;
+      padding:2.2rem 1.25rem 0;display:flex;align-items:center;gap:0.75rem;
+      background:var(--dark-bg);z-index:10;border-bottom:1px solid var(--border);
+    }
+    .back-btn{
+      width:38px;height:38px;border-radius:50%;background:var(--dark-elevated);
+      display:grid;place-items:center;color:var(--light-text);font-size:0.9rem;
+      cursor:pointer;border:none;transition:var(--transition);flex-shrink:0;
+    }
+    .back-btn:active{background:var(--binance-yellow);color:var(--dark-bg);transform:scale(0.9)}
+    .page-header h2{font-size:1.05rem;font-weight:700;letter-spacing:-0.3px}
+
+    /* ============ TOPBAR ============ */
+    .app-topbar{display:flex;justify-content:space-between;align-items:center;animation:slideDown 0.5s ease-out}
+    @keyframes slideDown{from{opacity:0;transform:translateY(-15px)}to{opacity:1;transform:translateY(0)}}
+    .user-greeting{display:flex;align-items:center;gap:0.65rem}
+    .avatar{
+      width:42px;height:42px;border-radius:50%;
+      background:linear-gradient(135deg,var(--binance-yellow),var(--binance-yellow-dark));
+      display:grid;place-items:center;color:var(--dark-bg);font-weight:800;font-size:1rem;
+      animation:pulseAvatar 3s ease-in-out infinite;
+    }
+    @keyframes pulseAvatar{
+      0%,100%{box-shadow:0 0 0 0 rgba(240,185,11,0.4)}
+      50%{box-shadow:0 0 0 8px rgba(240,185,11,0)}
+    }
+    .greeting-text{display:flex;flex-direction:column;line-height:1.2}
+    .greeting-text .hello{font-size:0.72rem;color:var(--secondary-text);font-weight:500}
+    .greeting-text .name{font-size:1rem;font-weight:700;color:var(--light-text)}
+    .topbar-actions{display:flex;gap:0.5rem}
+    .icon-btn{
+      width:40px;height:40px;border-radius:50%;background:var(--dark-elevated);
+      border:1px solid var(--border);display:grid;place-items:center;
+      color:var(--secondary-text);font-size:1rem;cursor:pointer;
+      transition:var(--transition);position:relative;
+    }
+    .icon-btn:active{transform:scale(0.9);background:var(--binance-yellow-soft);color:var(--binance-yellow)}
+    .icon-btn .badge-dot{
+      position:absolute;top:10px;right:10px;width:8px;height:8px;border-radius:50%;
+      background:var(--red);border:2px solid var(--dark-elevated);animation:blink 2s infinite;
+    }
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:0.3}}
+
+    /* ============ BALANCE CARD ============ */
+    .balance-card{
+      background:linear-gradient(135deg,#1e2329 0%,#2b3139 100%);
+      color:var(--light-text);border-radius:var(--radius-lg);padding:1.5rem;
+      position:relative;overflow:hidden;animation:fadeInUp 0.6s ease-out;
+      border:1px solid var(--border);cursor:pointer;
+    }
+    @keyframes fadeInUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    .balance-card::after{
+      content:'';position:absolute;top:-50%;right:-20%;width:250px;height:250px;
+      background:radial-gradient(circle,rgba(240,185,11,0.18) 0%,transparent 70%);
+      border-radius:50%;animation:rotateGlow 10s linear infinite;pointer-events:none;
+    }
+    @keyframes rotateGlow{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+    .balance-label{font-size:0.72rem;color:var(--secondary-text);margin-bottom:0.4rem;text-transform:uppercase;letter-spacing:1px;font-weight:500}
+    .balance-amount{
+      font-size:2.3rem;font-weight:800;letter-spacing:-1.5px;line-height:1.1;
+      margin-bottom:0.6rem;position:relative;z-index:1;
+    }
+    .balance-amount .currency{color:var(--binance-yellow);font-size:1.3rem;font-weight:700;margin-right:0.15rem}
+    .balance-change{
+      display:inline-flex;align-items:center;gap:0.35rem;
+      background:rgba(14,203,129,0.12);color:var(--green);
+      padding:0.35rem 0.75rem;border-radius:40px;font-size:0.75rem;font-weight:600;
+      position:relative;z-index:1;
+    }
+    .balance-actions{display:flex;gap:0.6rem;margin-top:1.25rem;position:relative;z-index:1}
+    .btn{
+      flex:1;display:inline-flex;align-items:center;justify-content:center;gap:0.4rem;
+      padding:0.75rem 0.8rem;border-radius:var(--radius-sm);font-weight:600;
+      font-size:0.82rem;cursor:pointer;transition:var(--transition);
+      border:none;font-family:inherit;
+    }
+    .btn-primary{background:var(--binance-yellow);color:var(--dark-bg)}
+    .btn-primary:active{background:var(--binance-yellow-dark);transform:scale(0.97)}
+    .btn-outline{background:rgba(255,255,255,0.05);color:var(--light-text);border:1px solid var(--border)}
+    .btn-outline:active{background:rgba(255,255,255,0.12);transform:scale(0.97)}
+
+    /* ============ QUICK ACTIONS ============ */
+    .quick-actions{
+      display:grid;grid-template-columns:repeat(4,1fr);gap:0.5rem;
+      animation:fadeInUp 0.6s ease-out 0.1s backwards;
+    }
+    .quick-action{
+      display:flex;flex-direction:column;align-items:center;gap:0.4rem;
+      padding:0.9rem 0.4rem;background:var(--dark-card);border-radius:var(--radius-md);
+      border:1px solid var(--border);cursor:pointer;transition:var(--transition);
+    }
+    .quick-action:active{transform:scale(0.95);background:var(--binance-yellow-soft);border-color:var(--binance-yellow)}
+    .quick-action-icon{
+      width:38px;height:38px;border-radius:12px;background:var(--binance-yellow-soft);
+      display:grid;place-items:center;color:var(--binance-yellow);font-size:0.95rem;
+      transition:transform var(--transition);
+    }
+    .quick-action:active .quick-action-icon{transform:scale(1.1) rotate(-5deg)}
+    .quick-action-label{font-size:0.68rem;font-weight:600;color:var(--light-text);text-align:center}
+
+    /* ============ STATS ============ */
+    .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;animation:fadeInUp 0.6s ease-out 0.15s backwards}
+    .stat-card{
+      background:var(--dark-card);border-radius:var(--radius-md);padding:1rem;
+      border:1px solid var(--border);transition:var(--transition);cursor:pointer;
+    }
+    .stat-card:active{transform:scale(0.97);border-color:var(--binance-yellow)}
+    .stat-label{display:flex;align-items:center;gap:0.4rem;font-size:0.7rem;color:var(--secondary-text);font-weight:500;margin-bottom:0.4rem}
+    .stat-label i{color:var(--binance-yellow);font-size:0.72rem}
+    .stat-value{font-size:1.05rem;font-weight:700;letter-spacing:-0.3px;margin-bottom:0.25rem;color:var(--light-text)}
+    .stat-change{font-size:0.68rem;font-weight:600;display:flex;align-items:center;gap:0.2rem}
+    .stat-change.up{color:var(--green)}
+    .stat-change.down{color:var(--red)}
+
+    /* ============ MARKET SECTION ============ */
+    .market-section{
+      background:var(--dark-card);border-radius:var(--radius-md);
+      border:1px solid var(--border);overflow:hidden;
+      animation:fadeInUp 0.6s ease-out 0.2s backwards;
+    }
+    .market-header{
+      display:flex;justify-content:space-between;align-items:center;
+      padding:1rem 1.1rem;border-bottom:1px solid var(--border);
+    }
+    .market-header h2{font-size:0.95rem;font-weight:700;color:var(--light-text)}
+    .see-all{
+      font-size:0.72rem;font-weight:600;color:var(--binance-yellow);
+      cursor:pointer;display:flex;align-items:center;gap:0.25rem;transition:var(--transition);
+    }
+    .see-all:active{opacity:0.6}
+    .market-tabs{
+      display:flex;gap:0.35rem;padding:0.7rem 1.1rem 0.5rem;
+      overflow-x:auto;scrollbar-width:none;
+    }
+    .market-tabs::-webkit-scrollbar{display:none}
+    .market-tabs button{
+      padding:0.4rem 0.85rem;border-radius:40px;font-size:0.7rem;font-weight:500;
+      color:var(--secondary-text);background:transparent;border:1px solid transparent;
+      cursor:pointer;transition:var(--transition);font-family:inherit;white-space:nowrap;
+    }
+    .market-tabs button.active{
+      background:var(--binance-yellow-soft);color:var(--binance-yellow);
+      border-color:rgba(240,185,11,0.3);font-weight:600;
+    }
+    .market-table-wrap{overflow-x:auto}
+    .market-table{width:100%;border-collapse:collapse;min-width:360px}
+    .market-table th{
+      text-align:left;padding:0.6rem 1.1rem;font-size:0.62rem;font-weight:600;
+      color:var(--secondary-text);text-transform:uppercase;letter-spacing:0.5px;
+      background:rgba(255,255,255,0.02);border-bottom:1px solid var(--border);
+    }
+    .market-table td{padding:0.8rem 1.1rem;font-size:0.8rem;border-bottom:1px solid var(--border);color:var(--light-text)}
+    .market-table tr:last-child td{border-bottom:none}
+    .market-table tbody tr{transition:background var(--transition);cursor:pointer;user-select:none}
+    .market-table tbody tr:active{background:var(--binance-yellow-soft)}
+    .coin-cell{display:flex;align-items:center;gap:0.6rem}
+    .coin-icon{
+      width:30px;height:30px;border-radius:50%;display:grid;place-items:center;
+      font-size:0.72rem;font-weight:700;color:var(--light-text);flex-shrink:0;
+      transition:transform var(--transition);
+    }
+    .market-table tbody tr:active .coin-icon{transform:rotate(15deg) scale(1.1)}
+    .coin-icon.btc{background:#f7931a}
+    .coin-icon.eth{background:#627eea}
+    .coin-icon.bnb{background:#f0b90b;color:var(--dark-bg)}
+    .coin-icon.sol{background:#14f195;color:var(--dark-bg)}
+    .coin-icon.xrp{background:#23292f}
+    .coin-info{display:flex;flex-direction:column;line-height:1.25}
+    .coin-info .symbol{font-weight:600;font-size:0.8rem}
+    .coin-info .name{font-size:0.65rem;color:var(--secondary-text)}
+    .price-cell{font-weight:600;font-variant-numeric:tabular-nums;font-size:0.78rem}
+    .change-pill{
+      display:inline-flex;align-items:center;gap:0.2rem;padding:0.2rem 0.5rem;
+      border-radius:40px;font-size:0.68rem;font-weight:600;
+    }
+    .change-pill.up{background:rgba(14,203,129,0.12);color:var(--green)}
+    .change-pill.down{background:rgba(246,70,93,0.12);color:var(--red)}
+    .action-btn{
+      padding:0.38rem 0.7rem;border-radius:var(--radius-sm);font-size:0.7rem;
+      font-weight:600;cursor:pointer;border:none;font-family:inherit;
+      transition:var(--transition);background:var(--binance-yellow);
+      color:var(--dark-bg);white-space:nowrap;
+    }
+    .action-btn:active{background:var(--binance-yellow-dark);transform:scale(0.95)}
+
+    /* ============ TICKER ============ */
+    .ticker-wrap{
+      background:var(--dark-card);border-radius:var(--radius-md);
+      padding:0.55rem 1.1rem;overflow:hidden;border:1px solid var(--border);
+      animation:fadeInUp 0.6s ease-out 0.05s backwards;
+    }
+    .ticker{display:flex;gap:2rem;animation:scrollTicker 40s linear infinite;white-space:nowrap}
+    @keyframes scrollTicker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+    .ticker-item{display:inline-flex;align-items:center;gap:0.4rem;color:var(--secondary-text);font-size:0.7rem;font-weight:500}
+    .ticker-item .ticker-symbol{color:var(--light-text);font-weight:600}
+    .ticker-item .ticker-price{color:var(--binance-yellow)}
+    .ticker-item .ticker-change.up{color:var(--green)}
+    .ticker-item .ticker-change.down{color:var(--red)}
+
+    /* ============ TAB BAR ============ */
+    .tab-bar{
+      position:absolute;bottom:0;left:0;right:0;height:85px;
+      background:rgba(11,14,17,0.95);backdrop-filter:blur(20px);
+      border-top:1px solid var(--border);display:flex;justify-content:space-around;
+      align-items:flex-start;padding:0.6rem 0.3rem 0;z-index:500;
+    }
+    .tab-item{
+      display:flex;flex-direction:column;align-items:center;gap:0.25rem;
+      padding:0.5rem 0.5rem;border-radius:var(--radius-sm);cursor:pointer;
+      transition:var(--transition);color:var(--secondary-text);font-size:0.62rem;
+      font-weight:500;min-width:58px;position:relative;background:none;border:none;font-family:inherit;
+    }
+    .tab-item i{font-size:1.1rem;transition:transform var(--transition)}
+    .tab-item.active{color:var(--binance-yellow)}
+    .tab-item.active i{transform:translateY(-2px)}
+    .tab-item.active::before{
+      content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
+      width:24px;height:3px;background:var(--binance-yellow);border-radius:0 0 3px 3px;
+    }
+    .tab-item:active i{transform:scale(0.9)}
+
+    /* ============ HOME INDICATOR ============ */
+    .home-indicator{
+      position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+      width:134px;height:5px;background:var(--light-text);border-radius:100px;
+      z-index:600;opacity:0.5;pointer-events:none;
+    }
+
+    /* ============ SUB-PAGE CARDS ============ */
+    .big-card{
+      background:var(--dark-card);border-radius:var(--radius-md);padding:1.25rem;
+      border:1px solid var(--border);color:var(--light-text);
+      animation:fadeInUp 0.4s ease-out;
+    }
+    .big-card h3{font-size:0.9rem;font-weight:700;margin-bottom:0.75rem;display:flex;align-items:center;gap:0.5rem}
+    .big-card h3 i{color:var(--binance-yellow)}
+    .big-card p{font-size:0.8rem;color:var(--secondary-text);line-height:1.6}
+    .list-item{
+      display:flex;align-items:center;gap:0.75rem;padding:0.9rem 0;
+      border-bottom:1px solid var(--border);cursor:pointer;transition:var(--transition);
+    }
+    .list-item:last-child{border-bottom:none}
+    .list-item:active{background:var(--binance-yellow-soft);margin:0 -1.25rem;padding-left:1.25rem;padding-right:1.25rem}
+    .list-icon{
+      width:38px;height:38px;border-radius:12px;background:var(--binance-yellow-soft);
+      display:grid;place-items:center;color:var(--binance-yellow);font-size:0.95rem;flex-shrink:0;
+    }
+    .list-content{flex:1;min-width:0}
+    .list-content .title{font-size:0.85rem;font-weight:600;color:var(--light-text);margin-bottom:0.15rem}
+    .list-content .subtitle{font-size:0.72rem;color:var(--secondary-text)}
+    .list-arrow{color:var(--secondary-text);font-size:0.75rem}
+
+    /* ============ RESPONSIVE ============ */
+    @media (max-width:450px){
+      body{padding:0;background:var(--dark-bg);align-items:flex-start}
+      .iphone-frame{width:100%;height:100vh;max-height:100vh;border-radius:0;padding:0;box-shadow:none}
+      .screen{border-radius:0}
+      .dynamic-island{display:none}
+      .status-bar{display:none}
+      .page-scroll{padding-top:1.5rem}
+      .page-scroll.with-back{padding-top:5rem}
+      .page-header{padding-top:1.25rem;height:4rem}
+      .home-indicator{display:none}
+      .tab-bar{height:75px}
+    }
+
+    @media (prefers-reduced-motion:reduce){
+      *,*::before,*::after{
+        animation-duration:0.01ms !important;
+        animation-iteration-count:1 !important;
+        transition-duration:0.01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="iphone-frame">
+    <div class="dynamic-island"></div>
+    <div class="status-bar">
+      <span class="time" id="statusTime">9:41</span>
+      <div class="status-icons">
+        <i class="fa-solid fa-signal"></i>
+        <i class="fa-solid fa-wifi"></i>
+        <i class="fa-solid fa-battery-full"></i>
+      </div>
+    </div>
+
+    <div class="screen">
+
+      <!-- ============ PAGE: HOME ============ -->
+      <div class="page active" id="page-home">
+        <div class="page-scroll">
+          <div class="ticker-wrap"><div class="ticker" id="ticker"></div></div>
+
+          <div class="app-topbar">
+            <div class="user-greeting">
+              <div class="avatar">F</div>
+              <div class="greeting-text">
+                <span class="hello">Welcome back</span>
+                <span class="name">Fred</span>
+              </div>
+            </div>
+            <div class="topbar-actions">
+              <button class="icon-btn" data-page="notifications" aria-label="Notifications">
+                <i class="fa-regular fa-bell"></i>
+                <span class="badge-dot"></span>
+              </button>
+            </div>
+          </div>
+
+          <div class="balance-card" data-page="wallet">
+            <div class="balance-label">Total balance</div>
+            <div class="balance-amount"><span class="currency">KSh</span><span id="animatedBalance">720,567</span></div>
+            <div class="balance-change"><i class="fa-solid fa-arrow-trend-up"></i> +2.34% today</div>
+            <div class="balance-actions">
+              <button class="btn btn-primary" data-page="deposit"><i class="fa-solid fa-plus"></i> Deposit</button>
+              <button class="btn btn-outline" data-page="withdraw"><i class="fa-solid fa-paper-plane"></i> Withdraw</button>
+            </div>
+          </div>
+
+          <div class="quick-actions">
+            <div class="quick-action" data-page="convert"><div class="quick-action-icon"><i class="fa-solid fa-arrow-right-arrow-left"></i></div><div class="quick-action-label">Convert</div></div>
+            <div class="quick-action" data-page="earn"><div class="quick-action-icon"><i class="fa-solid fa-coins"></i></div><div class="quick-action-label">Earn</div></div>
+            <div class="quick-action" data-page="markets"><div class="quick-action-icon"><i class="fa-solid fa-chart-line"></i></div><div class="quick-action-label">Markets</div></div>
+            <div class="quick-action" data-page="history"><div class="quick-action-icon"><i class="fa-solid fa-clock-rotate-left"></i></div><div class="quick-action-label">History</div></div>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card" data-page="wallet"><div class="stat-label"><i class="fa-solid fa-wallet"></i> Available</div><div class="stat-value">KSh 695,200</div><div class="stat-change up"><i class="fa-solid fa-arrow-up"></i> +1.2%</div></div>
+            <div class="stat-card" data-page="history"><div class="stat-label"><i class="fa-solid fa-lock"></i> In orders</div><div class="stat-value">KSh 25,367</div><div class="stat-change down"><i class="fa-solid fa-arrow-down"></i> −0.3%</div></div>
+            <div class="stat-card" data-page="earn"><div class="stat-label"><i class="fa-solid fa-coins"></i> Total profit</div><div class="stat-value">KSh 48,120</div><div class="stat-change up"><i class="fa-solid fa-arrow-up"></i> +7.8%</div></div>
+            <div class="stat-card" data-page="history"><div class="stat-label"><i class="fa-solid fa-percent"></i> Today's PnL</div><div class="stat-value">+KSh 12,540</div><div class="stat-change up"><i class="fa-solid fa-arrow-up"></i> +1.75%</div></div>
+          </div>
+
+          <div class="market-section">
+            <div class="market-header">
+              <h2>Markets</h2>
+              <span class="see-all" data-page="markets">See all <i class="fa-solid fa-chevron-right" style="font-size:0.55rem;"></i></span>
+            </div>
+            <div class="market-tabs" id="marketTabs">
+              <button class="active" data-tab="favorites">Favorites</button>
+              <button data-tab="all">All</button>
+              <button data-tab="gainers">Gainers</button>
+              <button data-tab="losers">Losers</button>
+            </div>
+            <div class="market-table-wrap">
+              <table class="market-table">
+                <thead><tr><th>Pair</th><th>Price</th><th>Change</th><th></th></tr></thead>
+                <tbody id="marketBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ PAGE: MARKETS ============ -->
+      <div class="page" id="page-markets">
+        <div class="page-header"><button class="back-btn" data-back><i class="fa-solid fa-arrow-left"></i></button><h2>Markets</h2></div>
+        <div class="page-scroll with-back">
+          <div class="market-tabs" id="marketsPageTabs" style="padding:0;">
+            <button class="active" data-tab="all">All</button>
+            <button data-tab="gainers">Gainers</button>
+            <button data-tab="losers">Losers</button>
+          </div>
+          <div class="market-section">
+            <div class="market-table-wrap">
+              <table class="market-table">
+                <thead><tr><th>Pair</th><th>Price</th><th>Change</th><th>Volume</th></tr></thead>
+                <tbody id="marketsPageBody"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ PAGE: TRADE ============ -->
+      <div class="page" id="page-trade">
+        <div class="page-header"><button class="back-btn" data-back><i class="fa-solid fa-arrow-left"></i></button><h2>Trade</h2></div>
+        <div class="page-scroll with-back">
+          <div class="big-card"><h3><i class="fa-solid fa-bolt"></i> Spot Trading</h3><p>Place market or limit orders on 400+ pairs. Real-time charts and order books coming soon.</p></div>
+          <div class="big-card"><h3><i class="fa-solid fa-arrow-right-arrow-left"></i> Convert</h3><div class="list-item" data-page="convert"><div class="list-icon"><i class="fa-solid fa-right-left"></i></div><div class="list-content"><div class="title">Instant Convert</div><div class="subtitle">Swap crypto with zero fees</div></div><i class="fa-solid fa-chevron-right list-arrow"></i></div></div>
+          <div class="big-card">
+            <h3><i class="fa-solid fa-clock-rotate-left"></i> Recent Orders</h3>
+            <div class="list-item"><div class="list-icon" style="background:rgba(14,203,129,0.12);color:var(--green);"><i class="fa-solid fa-arrow-up"></i></div><div class="list-content"><div class="title">Buy BTC</div><div class="subtitle">0.0012 BTC · Today, 14:32</div></div><span style="font-size:0.75rem;color:var(--green);font-weight:600;">+KSh 2,840</span></div>
+            <div class="list-item"><div class="list-icon" style="background:rgba(246,70,93,0.12);color:var(--red);"><i class="fa-solid fa-arrow-down"></i></div><div class="list-content"><div class="title">Sell ETH</div><div class="subtitle">0.05 ETH · Yesterday, 09:15</div></div><span style="font-size:0.75rem;color:var(--red);font-weight:600;">−KSh 1,220</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ PAGE: WALLET ============ -->
+      <div class="page" id="page-wallet">
+        <div class="page-header"><button class="back-btn" data-back><i class="fa-solid fa-arrow-left"></i></button><h2>Wallet</h2></div>
+        <div class="page-scroll with-back">
+          <div class="balance-card">
+            <div class="balance-label">Total balance</div>
+            <div class="balance-amount"><span class="currency">KSh</span>720,567</div>
+            <div class="balance-change"><i class="fa-solid fa-arrow-trend-up"></i> +2.34% today</div>
+            <div class="balance-actions">
+              <button class="btn btn-primary" data-page="deposit"><i class="fa-solid fa-plus"></i> Deposit</button>
+              <button class="btn btn-outline" data-page="withdraw"><i class="fa-solid fa-paper-plane"></i> Withdraw</button>
+            </div>
+          </div>
+          <div class="big-card">
+            <h3><i class="fa-solid fa-coins"></i> Your Assets</h3>
+            <div class="list-item"><div class="coin-icon btc">B</div><div class="list-content"><div class="title">Bitcoin</div><div class="subtitle">0.052 BTC</div></div><span style="font-weight:600;font-size:0.85rem;">KSh 503,580</span></div>
+            <div class="list-item"><div class="coin-icon eth">E</div><div class="list-content"><div class="title">Ethereum</div><div class="subtitle">0.32 ETH</div></div><span style="font-weight:600;font-size:0.85rem;">KSh 163,960</span></div>
+            <div class="list-item"><div class="coin-icon bnb">B</div><div class="list-content"><div class="title">BNB</div><div class="subtitle">0.68 BNB</div></div><span style="font-weight:600;font-size:0.85rem;">KSh 53,027</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ PAGE: PROFILE ============ -->
+      <div class="page" id="page-profile">
+        <div class="page-header"><button class="back-btn" data-back><i class="fa-solid fa-arrow-left"></i></button><h2>Profile</h2></div>
+        <div class="page-scroll with-back">
+          <div class="big-card" style="text-align:center;padding:2rem 1.25rem;">
+            <div class="avatar" style="width:72px;height:72px;font-size:1.6rem;margin:0 auto 1rem;">F</div>
+            <h3 style="justify-content:center;font-size:1.1rem;margin-bottom:0.25rem;">Fred</h3>
+            <p style="font-size:0.8rem;">fred@binance.com · Verified</p>
+          </div>
+          <div class="big-card">
+            <h3><i class="fa-solid fa-gear"></i> Account</h3>
+            <div class="list-item" data-page="settings"><div class="list-icon"><i class="fa-solid fa-shield-halved"></i></div><div class="list-content"><div class="title">Security</div><div class="subtitle">2FA, biometrics</div></div><i class="fa-solid fa-chevron-right list-arrow"></i></div>
+            <div class="list-item" data-page="notifications"><div class="list-icon"><i class="fa-solid fa-bell"></i></div><div class="list-content"><div class="title">Notifications</div><div class="subtitle">Manage alerts</div></div><i class="fa-solid fa-chevron-right list-arrow"></i></div>
+            <div class="list-item"><div class="list-icon"><i class="fa-solid fa-language"></i></div><div class="list-content"><div class="title">Language</div><div class="subtitle">English</div></div><i class="fa-solid fa-chevron-right list-arrow"></i></div>
+            <div class="list-item"><div class="list-icon"><i class="fa-solid fa-arrow-right-from-bracket"></i></div><div class="list-content"><div class="title">Log out</div><div class="subtitle">Sign out of your account</div></div><i class="fa-solid fa-chevron-right list-arrow"></i></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ PAGE: NOTIFICATIONS ============ -->
+      <div class="page" id="page-notifications">
+        <div class="page-header"><button class="back-btn" data-back><i class="fa-solid fa-arrow-left"></i></button><h2>Notifications</h2></div>
+        <div class="page-scroll with-back">
+          <div class="big-card">
+            <div class="list-item"><div class="list-icon"><i class="fa-solid fa-arrow-trend-up"></i></div><div class="list-content"><div class="title">BTC up 2.14%</div><div class="subtitle">Your BTC holding gained value · 2m ago</div></div></div>
+            <div class="list-item"><div class="list-icon" style="background:rgba(14,203,129,0.12);color:var(--green);"><i class="fa-solid fa-check"></i></div><div class="list-content"><div class="title">Deposit confirmed</div><div class="subtitle">KSh 50,000 added · 1h ago</div></div></div>
+            <div class="list-item"><div class="list-icon"><i class="fa-solid fa-gift"></i></div><div class="list-content"><div class="title">Welcome bonus</div><div class="subtitle">Complete your KYC to claim KSh 1,000 · 3h ago</div></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ PAGE: DEPOSIT ============ -->
+      <div class="page" id="page-deposit">
+        <div class="page-header"><button class="back-btn" data-back><i class="fa-solid fa-arrow-left"></i></button><h2>Deposit</h2></div>
+        <div class="page-scroll with-back">
+          <div class="big-card"><h3><i class="fa-solid fa-mobile-screen"></i> M-Pesa</h3><p>Send to Paybill 400200 · Account: BINANCE + your phone number. Funds arrive instantly.</p></div>
+          <div class="big-card"><h3><i class="fa-solid fa-building-columns"></i> Bank Transfer</h3><p>Equity Bank · Account 0123456789 · Project Fred. Allow 1 business day.</p></div>
+          <div class="big-card"><h3><i class="fa-solid fa-coins"></i> Crypto Deposit</h3><p>Send BTC, ETH, or BNB directly to your Binance wallet address.</p></div>
+        </div>
+      </div>
+
+      <!-- ============ PAGE: WITHDRAW ============ -->
+      <div class="page" id="page-withdraw">
+        <div class="page-header"><button class="back-btn" data-back><i class="fa-solid fa-arrow-left"></i></button><h2>Withdraw</h2></div>
+        <div class="page-scroll with-back">
+          <div class="big-card"><h3><i class="fa-solid fa-mobile-screen"></i> M-Pesa Withdrawal</h3><p>Minimum KSh 500 · Arrives within 5 minutes. Fee: KSh 0 for first 3 withdrawals monthly.</p></div>
+          <div class="big-card"><h3><i class="fa-solid fa-building-columns"></i> Bank Withdrawal</h3><p>Minimum KSh 5,000 · Arrives next business day. Fee: KSh 50 flat.</p></div>
+          <div class="big-card"><h3><i class="fa-solid fa-coins"></i> Crypto Withdrawal</h3><p>Network fees apply. Confirm destination address carefully — transfers are irreversible.</p></div>
+        </div>
+      </div>
+
+      <!-- ============ PAGE: CONVERT ============ -->
+      <div class="page" id="page-convert">
+        <div class="page-header"><button class="back-btn" data-back><i class="fa-solid fa-arrow-left"></i></button><h2>Convert</h2></div>
+        <div class="page-scroll with-back">
+          <div class="big-card">
+            <h3><i class="fa-solid fa-right-left"></i> Instant Convert</h3>
+            <p>Swap between any of 50+ assets at zero fees. Settlement is instant.</p>
+            <div class="list-item" style="margin-top:0.75rem;">
+              <div class="coin-icon btc">B</div>
+              <div class="list-content"><div class="title">BTC</div><div class="subtitle">Bitcoin</div></div>
+              <i class="fa-solid fa-arrow-right" style="color:var(--binance-yellow);"></i>
+              <div class="coin-icon eth" style="margin-left:0.75rem;">E</div>
+              <div class="list-content"><div class="title">ETH</div><div class="subtitle">Ethereum</div></div>
+            </div>
+          </div>
+          <div class="big-card">
+            <h3><i class="fa-solid fa-percent"></i> Recent Conversions</h3>
+            <div class="list-item"><div class="list-content"><div class="title">0.001 BTC → 0.047 ETH</div><div class="subtitle">Today, 10:22</div></div><span style="font-size:0.72rem;color:var(--secondary-text);">0 fee</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ PAGE: EARN ============ -->
+      <div class="page" id="page-earn">
+        <div class="page-header"><button class="back-btn" data-back><i class="fa-solid fa-arrow-left"></i></button><h2>Earn</h2></div>
+        <div class="page-scroll with-back">
+          <div class="big-card"><h3><i class="fa-solid fa-coins"></i> Flexible Savings</h3><p>Up to 8% APY on BTC, ETH, and stablecoins. Withdraw anytime.</p></div>
+          <div class="big-card"><h3><i class="fa-solid fa-lock"></i> Locked Staking</h3><p>Up to 15% APY on BNB, SOL, ADA. 30/60/90-day terms available.</p></div>
+          <div class="big-card"><h3><i class="fa-solid fa-gift"></i> Launchpool</h3><p>Stake BNB to earn new tokens before they list. Current pool: +42% APY.</p></div>
+        </div>
+      </div>
+
+      <!-- ============ PAGE: HISTORY ============ -->
+      <div class="page" id="page-history">
+        <div class="page-header"><button class="back-btn" data-back><i class="fa-solid fa-arrow-left"></i></button><h2>History</h2></div>
+        <div class="page-scroll with-back">
+          <div class="big-card">
+            <h3><i class="fa-solid fa-clock-rotate-left"></i> Recent Activity</h3>
+            <div class="list-item"><div class="list-icon" style="background:rgba(14,203,129,0.12);color:var(--green);"><i class="fa-solid fa-arrow-up"></i></div><div class="list-content"><div class="title">Buy BTC</div><div class="subtitle">0.0012 BTC · Today, 14:32</div></div><span style="font-size:0.75rem;color:var(--green);font-weight:600;">+KSh 2,840</span></div>
+            <div class="list-item"><div class="list-icon" style="background:rgba(246,70,93,0.12);color:var(--red);"><i class="fa-solid fa-arrow-down"></i></div><div class="list-content"><div class="title">Sell ETH</div><div class="subtitle">0.05 ETH · Yesterday, 09:15</div></div><span style="font-size:0.75rem;color:var(--red);font-weight:600;">−KSh 1,220</span></div>
+            <div class="list-item"><div class="list-icon"><i class="fa-solid fa-arrow-right-arrow-left"></i></div><div class="list-content"><div class="title">Convert</div><div class="subtitle">0.001 BTC → 0.047 ETH · Today, 10:22</div></div><span style="font-size:0.72rem;color:var(--secondary-text);">0 fee</span></div>
+            <div class="list-item"><div class="list-icon" style="background:rgba(14,203,129,0.12);color:var(--green);"><i class="fa-solid fa-check"></i></div><div class="list-content"><div class="title">Deposit</div><div class="subtitle">KSh 50,000 · Today, 08:00</div></div><span style="font-size:0.75rem;color:var(--green);font-weight:600;">+KSh 50,000</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ PAGE: SETTINGS ============ -->
+      <div class="page" id="page-settings">
+        <div class="page-header"><button class="back-btn" data-back><i class="fa-solid fa-arrow-left"></i></button><h2>Settings</h2></div>
+        <div class="page-scroll with-back">
+          <div class="big-card">
+            <h3><i class="fa-solid fa-shield-halved"></i> Security</h3>
+            <div class="list-item"><div class="list-icon"><i class="fa-solid fa-key"></i></div><div class="list-content"><div class="title">Two-factor authentication</div><div class="subtitle">Enabled</div></div><i class="fa-solid fa-chevron-right list-arrow"></i></div>
+            <div class="list-item"><div class="list-icon"><i class="fa-solid fa-fingerprint"></i></div><div class="list-content"><div class="title">Biometric login</div><div class="subtitle">Face ID enabled</div></div><i class="fa-solid fa-chevron-right list-arrow"></i></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ BOTTOM TAB BAR ============ -->
+      <nav class="tab-bar" id="tabBar">
+        <button class="tab-item active" data-page="home"><i class="fa-solid fa-house"></i><span>Home</span></button>
+        <button class="tab-item" data-page="markets"><i class="fa-solid fa-chart-simple"></i><span>Markets</span></button>
+        <button class="tab-item" data-page="trade"><i class="fa-solid fa-arrow-right-arrow-left"></i><span>Trade</span></button>
+        <button class="tab-item" data-page="wallet"><i class="fa-solid fa-wallet"></i><span>Wallet</span></button>
+        <button class="tab-item" data-page="profile"><i class="fa-regular fa-user"></i><span>Profile</span></button>
+      </nav>
+
+      <div class="home-indicator"></div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      'use strict';
+
+      const MARKETS = [
+        { symbol: 'BTC', name: 'Bitcoin',  price: 9684220, change: 2.14,  volume: '1.24B', cls: 'btc', favorite: true  },
+        { symbol: 'ETH', name: 'Ethereum', price: 512380,  change: 1.87,  volume: '842M',  cls: 'eth', favorite: true  },
+        { symbol: 'BNB', name: 'BNB',      price: 78240,   change: -0.42, volume: '412M',  cls: 'bnb', favorite: true  },
+        { symbol: 'SOL', name: 'Solana',   price: 18420,   change: 4.62,  volume: '398M',  cls: 'sol', favorite: false },
+        { symbol: 'XRP', name: 'XRP',      price: 134,     change: -1.21, volume: '276M',  cls: 'xrp', favorite: false },
+        { symbol: 'ADA', name: 'Cardano',  price: 79,      change: 0.35,  volume: '124M',  cls: 'btc', favorite: false }
+      ];
+
+      const $ = (sel) => document.querySelector(sel);
+      const $$ = (sel) => [...document.querySelectorAll(sel)];
+
+      const formatKsh = (v) => 'KSh ' + v.toLocaleString('en-KE', { maximumFractionDigits: 0 });
+      const formatChange = (c) => (c >= 0 ? '+' : '') + c.toFixed(2) + '%';
+
+      /* ================= NAVIGATION ================= */
+      const pageHistory = ['home'];
+      const TOP_LEVEL = ['home', 'markets', 'trade', 'wallet', 'profile'];
+
+      function goToPage(pageId) {
+        if (!pageId) return;
+        const target = $('#page-' + pageId);
+        if (!target) return;
+        if (pageHistory[pageHistory.length - 1] === pageId) return;
+
+        $$('.page').forEach(p => p.classList.toggle('active', p.id === 'page-' + pageId));
+        $$('.tab-item').forEach(t => t.classList.toggle('active', t.dataset.page === pageId));
+
+        const scrollEl = target.querySelector('.page-scroll');
+        if (scrollEl) scrollEl.scrollTop = 0;
+
+        if (TOP_LEVEL.includes(pageId)) {
+          pageHistory.length = 0;
+          pageHistory.push(pageId);
+        } else {
+          pageHistory.push(pageId);
+        }
+      }
+
+      function goBack() {
+        if (pageHistory.length > 1) {
+          pageHistory.pop();
+          goToPage(pageHistory[pageHistory.length - 1]);
+        } else {
+          goToPage('home');
+        }
+      }
+
+      /* ================= GLOBAL CLICK ================= */
+      document.addEventListener('click', function (e) {
+        const backBtn = e.target.closest('[data-back]');
+        if (backBtn) { e.preventDefault(); goBack(); return; }
+
+        const marketRow = e.target.closest('.market-table tbody tr');
+        if (marketRow && !marketRow.dataset.page) {
+          e.preventDefault();
+          goToPage('trade');
+          return;
+        }
+
+        const navTarget = e.target.closest('[data-page]');
+        if (navTarget && navTarget.dataset.page) {
+          e.preventDefault();
+          goToPage(navTarget.dataset.page);
+          return;
+        }
+      });
+
+      /* ================= RENDER MARKETS ================= */
+      function renderMarketTable(tbodyId, filter) {
+        const tbody = $('#' + tbodyId);
+        if (!tbody) return;
+
+        let list = MARKETS.slice();
+        if (filter === 'favorites') list = list.filter(c => c.favorite);
+        else if (filter === 'gainers') list = list.filter(c => c.change > 0).sort((a, b) => b.change - a.change);
+        else if (filter === 'losers') list = list.filter(c => c.change < 0).sort((a, b) => a.change - b.change);
+
+        if (!list.length) {
+          tbody.innerHTML = `<tr><td colspan="4" style="text-align:center;color:var(--secondary-text);padding:2rem;font-size:0.8rem;">No pairs match this filter.</td></tr>`;
+          return;
+        }
+
+        tbody.innerHTML = list.map(c => {
+          const isUp = c.change >= 0;
+          return `
+            <tr>
+              <td>
+                <div class="coin-cell">
+                  <div class="coin-icon ${c.cls}">${c.symbol.charAt(0)}</div>
+                  <div class="coin-info">
+                    <span class="symbol">${c.symbol}</span>
+                    <span class="name">${c.name}</span>
+                  </div>
+                </div>
+              </td>
+              <td class="price-cell">${formatKsh(c.price)}</td>
+              <td>
+                <span class="change-pill ${isUp ? 'up' : 'down'}">
+                  <i class="fa-solid fa-arrow-${isUp ? 'up' : 'down'}" style="font-size:0.55rem;"></i>
+                  ${formatChange(c.change)}
+                </span>
+              </td>
+              ${tbodyId === 'marketsPageBody'
+                ? `<td class="price-cell" style="color:var(--secondary-text);font-weight:500;">${c.volume}</td>`
+                : `<td><button class="action-btn" data-page="trade">Trade</button></td>`}
+            </tr>
+          `;
+        }).join('');
+      }
+
+      /* ================= TICKER ================= */
+      function renderTicker() {
+        const ticker = $('#ticker');
+        if (!ticker) return;
+        const doubled = [...MARKETS, ...MARKETS];
+        ticker.innerHTML = doubled.map(c => {
+          const isUp = c.change >= 0;
+          return `
+            <span class="ticker-item">
+              <span class="ticker-symbol">${c.symbol}</span>
+              <span class="ticker-price">${formatKsh(c.price)}</span>
+              <span class="ticker-change ${isUp ? 'up' : 'down'}">${formatChange(c.change)}</span>
+            </span>
+          `;
+        }).join('');
+      }
+
+      /* ================= MARKET TABS ================= */
+      $('#marketTabs').addEventListener('click', (e) => {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        e.stopPropagation();
+        $('#marketTabs').querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderMarketTable('marketBody', btn.dataset.tab);
+      });
+
+      $('#marketsPageTabs').addEventListener('click', (e) => {
+        const btn = e.target.closest('button');
+        if (!btn) return;
+        e.stopPropagation();
+        $('#marketsPageTabs').querySelectorAll('button').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        renderMarketTable('marketsPageBody', btn.dataset.tab);
+      });
+
+      /* ================= BALANCE COUNTER ================= */
+      function animateBalance() {
+        const el = $('#animatedBalance');
+        if (!el) return;
+        const target = 720567;
+        const duration = 1800;
+        const start = performance.now();
+        function step(now) {
+          const elapsed = now - start;
+          const progress = Math.min(elapsed / duration, 1);
+          const eased = 1 - Math.pow(1 - progress, 3);
+          el.textContent = Math.floor(eased * target).toLocaleString('en-KE');
+          if (progress < 1) requestAnimationFrame(step);
+          else el.textContent = target.toLocaleString('en-KE');
+        }
+        requestAnimationFrame(step);
+      }
+
+      /* ================= CLOCK ================= */
+      function updateStatusTime() {
+        const el = $('#statusTime');
+        if (!el) return;
+        const now = new Date();
+        el.textContent = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+      }
+
+      /* ================= INIT ================= */
+      renderTicker();
+      renderMarketTable('marketBody', 'favorites');
+      renderMarketTable('marketsPageBody', 'all');
+      animateBalance();
+      updateStatusTime();
+      setInterval(updateStatusTime, 30000);
+    })();
+  </script>
+</body>
+</html>
